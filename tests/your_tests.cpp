@@ -21,7 +21,7 @@ DISABLE_WARNINGS_POP()
 // These tests are only to help you verify that your code is correct.
 // You don't have to hand them in; we will not consider them when grading.
 //
-// TEST
+
 // Add your tests here, if you want :D
 TEST_CASE("StudentTest")
 {

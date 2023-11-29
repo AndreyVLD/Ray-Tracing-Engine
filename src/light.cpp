@@ -67,22 +67,26 @@ bool visibilityOfLightSampleBinary(RenderState& state, const glm::vec3& lightPos
         glm::vec3 point = ray.origin + ray.direction * ray.t;
         glm::vec3 direction = point - lightPosition;
 
-        float epsilon = 1.0f/pow(10,3);
+        float epsilon = 1.0f / pow(10, 3);
 
+        //offset because of self intersecting rays
         Ray fromLightRay = {
             lightPosition + epsilon * glm::normalize(direction),
             glm::normalize(direction),
-            glm::length(direction) - 2.0f*epsilon
+            glm::length(direction) - 2.0f * epsilon
         };
 
-        HitInfo info;
+        HitInfo info {};
 
+        //since we offset, the ray can never intersect our point 
+        //so if it actually intersects something, it's blocking our point and putting it in shadow
         if (state.bvh.intersect(state, fromLightRay, info)) {
-            return false;
+                return false;
         }
-      
+
         return true;
     }
+
 }
 
 // TODO: Standard feature
@@ -107,23 +111,25 @@ glm::vec3 visibilityOfLightSampleTransparency(RenderState& state, const glm::vec
     HitInfo info {};
 
     glm::vec3 point = ray.origin + ray.direction * ray.t;
+    //starting from the point to apply alpha blending the correct way
     glm::vec3 direction = lightPosition-point;
-    float distance = glm::length(direction);
     
     float epsilon = 1.0f / pow(10, 3);
 
-    Ray fromLightRay = {
+    Ray fromPointRay = {
         point + epsilon * glm::normalize(direction),
         glm::normalize(direction),
-        distance - 2 * epsilon
+        glm::length(direction) - 2 * epsilon
     };
 
-    if (state.bvh.intersect(state, fromLightRay, info))
-        if (info.material.transparency < 1.0f)
-            color = visibilityOfLightSampleTransparency(state, lightPosition, lightColor, fromLightRay, info) * (1 - info.material.transparency) * hitInfo.material.kd;
-        else
-            return glm::vec3(0.0f);
-    
+    if (state.bvh.intersect(state, fromPointRay, info)) {
+        float alpha = info.material.transparency;
+
+        if (alpha == 1.0f) // check if opaque
+                return glm::vec3 { 0.0f, 0.0f, 0.0f };
+
+        else color = visibilityOfLightSampleTransparency(state, lightPosition, lightColor, fromPointRay, info) * (1 - alpha) * info.material.kd;
+    }       
     return color;
 }
 
@@ -182,6 +188,7 @@ glm::vec3 computeContributionSegmentLight(RenderState& state, const SegmentLight
         float sample = state.sampler.next_1d();
         sampleSegmentLight(sample, light, lightPos, color);
 
+        //compute the vectors as in the previous method
         glm::vec3 p = ray.origin + ray.t * ray.direction;
         glm::vec3 l = glm::normalize(lightPos - p);
         glm::vec3 v = -ray.direction;

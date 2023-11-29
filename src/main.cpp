@@ -73,8 +73,10 @@ int main(int argc, char** argv)
         Scene scene = loadScenePrebuilt(sceneType, config.dataPath);
         BVH bvh(scene, config.features);
 
+        int bvhPlaneSplit = 0;
         int bvhDebugLevel = 0;
         int bvhDebugLeaf = 0;
+        bool debugPlaneSplit { false };
         bool debugBVHLevel { false };
         bool debugBVHLeaf { false };
         ViewMode viewMode { ViewMode::Rasterization };
@@ -186,6 +188,9 @@ int main(int argc, char** argv)
                 if (config.features.extra.enableBloomEffect) {
                     ImGui::Indent();
                     // Add bloom settings here, if necessary
+                    ImGui::SliderInt("Filter size", &filterSize, 3, 49);
+                    ImGui::SliderFloat("Scale", &scale, 0.3f, 3.0f);
+                    ImGui::SliderFloat("Threshold", &threshold, 0.2f, 1.0f);
                     ImGui::Unindent();
                 }
                 ImGui::Checkbox("Depth of field", &config.features.extra.enableDepthOfField);
@@ -200,6 +205,7 @@ int main(int argc, char** argv)
                 ImGui::Checkbox("Motion blur", &config.features.extra.enableMotionBlur);
                 if (config.features.extra.enableMotionBlur) {
                     ImGui::Indent();
+                    ImGui::SliderInt("Number of samples", &numSampleMotionBlur, 10, 100);
                     // Add motion blur settings here, if necessary
                     ImGui::Unindent();
                 }
@@ -258,6 +264,9 @@ int main(int argc, char** argv)
                 ImGui::Checkbox("Draw BVH Leaf", &debugBVHLeaf);
                 if (debugBVHLeaf)
                     ImGui::SliderInt("BVH Leaf", &bvhDebugLeaf, 1, bvh.numLeaves());
+                ImGui::Checkbox("Draw BVH Split planes", &debugPlaneSplit);
+                if (debugPlaneSplit)
+                    ImGui::SliderInt("Bvh Level", &bvhPlaneSplit, 0, bvh.nodes().size() - 2);
             }
 
             ImGui::Spacing();
@@ -395,7 +404,7 @@ int main(int argc, char** argv)
 
                 drawLightsOpenGL(scene, camera, selectedLightIdx);
 
-                if (debugBVHLevel || debugBVHLeaf) {
+                if (debugBVHLevel || debugBVHLeaf || debugPlaneSplit) {
                     glPushAttrib(GL_ALL_ATTRIB_BITS);
                     setOpenGLMatrices(camera);
                     glDisable(GL_LIGHTING);
@@ -410,6 +419,8 @@ int main(int argc, char** argv)
                         bvh.debugDrawLevel(bvhDebugLevel);
                     if (debugBVHLeaf)
                         bvh.debugDrawLeaf(bvhDebugLeaf);
+                    if (debugPlaneSplit)
+                        bvh.debugDrawPlanes(bvhPlaneSplit);
                     enableDebugDraw = false;
                     glPopAttrib();
                 }

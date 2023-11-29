@@ -10,6 +10,11 @@ extern int numsamplesDOF;
 extern float focalLength;
 extern float lensSize;
 
+extern int filterSize;
+extern float scale;
+extern float threshold;
+
+extern int numSampleMotionBlur;
 // TODO; Extra feature
 // Given the same input as for `renderImage()`, instead render an image with your own implementation
 // of depth of field. Here, you generate camera rays s.t. a focus point and a thin lens camera model
@@ -58,3 +63,7 @@ glm::vec3 sampleEnvironmentMap(RenderState& state, Ray ray);
 // For a description of the method's arguments, refer to 'bounding_volume_hierarchy.cpp'
 // NOTE: this method is unit-tested, so do not change the function signature.
 size_t splitPrimitivesBySAHBin(const AxisAlignedBox& aabb, uint32_t axis, std::span<BVHInterface::Primitive> primitives);
+
+void splitIntoBins(std::vector<AxisAlignedBox>& bins, std::vector<uint32_t>& leftCount, std::vector<uint32_t>& rightCount, std::vector<float>& leftArea, std::vector<float>& rightArea, std::span<BVHInterface::Primitive> primitives, uint32_t axis, const AxisAlignedBox& aabb);
+
+void getMinimalCost(std::vector<uint32_t>& leftCount, std::vector<uint32_t>& rightCount, std::vector<float>& leftArea, std::vector<float>& rightArea, float& minCost, uint32_t& currIdx);

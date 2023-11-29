@@ -26,6 +26,8 @@ enum SceneType {
     Custom,
 };
 
+const std::filesystem::path envMapPath = DATA_DIR / std::filesystem::path("StandardCubeMap.png");
+
 struct Scene {
     using SceneLight = std::variant<PointLight, SegmentLight, ParallelogramLight>;
 
@@ -33,7 +35,8 @@ struct Scene {
     std::vector<Mesh> meshes;
     std::vector<Sphere> spheres;
     std::vector<SceneLight> lights;
-
+    // environment map object
+    Image envMap = Image(envMapPath);
     // You can add your own objects (e.g. environment maps) here
     // ...
 };

@@ -146,7 +146,7 @@ glm::vec3 computeBlinnPhongModel(RenderState& state, const glm::vec3& cameraDire
 // - ti; a number between [-1, 1]
 // This method is unit-tested, so do not change the function signature.
 glm::vec3 LinearGradient::sample(float ti) const
-{
+{   //sort components to be able to create the intervals for t
     std::vector<Component> sorted = components;
     std::sort(sorted.begin(), sorted.end(), [](const Component& x, const Component& y) {
         return x.t < y.t;
@@ -171,14 +171,15 @@ glm::vec3 LinearGradient::sample(float ti) const
                break;
         }
     }
-
+    //if outside of interval, return the nearest color
     if (first.t == last.t)
         return first.color;
     if (sorted[i].t == ti)
         return sorted[i].color;
 
+    
     float alpha = 1.0f*(ti - first.t) / (last.t - first.t);
-    glm::vec3 color = (1.0f - alpha) * first.color + last.color * alpha;
+    glm::vec3 color = (1.0f - alpha) * first.color + last.color * alpha; //or glm::mix i guess
     return color;
 }
 
@@ -206,11 +207,7 @@ glm::vec3 computeLinearGradientModel(RenderState& state, const glm::vec3& camera
     
     bool transparent = hitInfo.material.transparency != 1.0f;
     if (transparent)
-        return color * lightColor * cos_theta;
+        return color * lightColor * abs(cos_theta) * sampleMaterialKd(state, hitInfo);
     
-    if (cos_theta < 0.0f)
-        return glm::vec3 { 0.0f, 0.0f, 0.0f };
-    
-
-    return color*lightColor*cos_theta;
+    return color*lightColor*cos_theta*sampleMaterialKd(state, hitInfo);
 }

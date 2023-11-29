@@ -47,6 +47,7 @@ struct BVH : public BVHInterface {
     // Constants used throughout the BVH
     static constexpr uint32_t LeafSize = 4; // Maximum nr. of primitives in a leaf
     static constexpr uint32_t RootIndex = 0; // Index of root node in `m_nodes` vector
+    static constexpr uint32_t Bins = 16; // Number of bins for splitting
 
     // Constructor. Receives the scene and starts the build process
     // NOTE: this constructor is used in tests, so do not change its function signature.
@@ -100,6 +101,8 @@ public: // Visual debug
     // For a description of the method's arguments, refer to 'bounding_volume_hierarchy.cpp'
     // You are free to modify this function's signature.
     void debugDrawLeaf(int leafIndex);
+
+    void debugDrawPlanes(int level);
 
     void traverse(uint32_t node, int level, int currLevel);
 
